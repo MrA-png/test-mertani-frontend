@@ -8,9 +8,13 @@
 	<Sidebar />
 
 	<main class="flex-1 bg-gray-50 flex flex-col">
-		<Topbar />
+		<div class="sticky top-0 z-20">
+			<Topbar />
+		</div>
 
-		<div class="bg-white rounded-xl mx-20 my-6 shadow-sm border border-gray-200">
+		<div
+			class="bg-white rounded-xl mx-20 my-6 shadow-sm border border-gray-200 content-container overflow-hidden hover:overflow-auto"
+		>
 			<slot />
 		</div>
 	</main>
@@ -21,5 +25,18 @@
 
 	:global(html) {
 		font-family: 'Inter', sans-serif;
+	}
+
+	.content-container {
+		max-height: calc(100vh - 100px); 
+	}
+
+	.content-container::-webkit-scrollbar {
+		width: 6px;
+	}
+
+	.content-container::-webkit-scrollbar-thumb {
+		background-color: rgba(0, 0, 0, 0.2);
+		border-radius: 4px;
 	}
 </style>

@@ -1,39 +1,117 @@
 <script lang="ts">
 	import DeviceStatus from '../components/informasi-device/DeviceStatus.svelte';
 	import SensorPlaceholder from '../components/detail-pemantauan/SensorPlaceholder.svelte';
+	import { Plus, X, Check } from 'lucide-svelte';
+	import MultiAxisChart from '../components/chart/MultiAxisChart.svelte';
+	import MonitoringTable from '../components/detail-pemantauan/MonitoringTable.svelte';
+
+	let dropdownOpen = false;
+
+	let sensors = [
+		{ name: 'Water Level', checked: true },
+		{ name: 'Rainfall', checked: true },
+		{ name: 'Wind Direction', checked: false }
+	];
+
+	let selectAll = false;
+
+	$: selectAll = sensors.every((s) => s.checked);
+
+	function toggleAll() {
+		const newState = !selectAll;
+		sensors = sensors.map((sensor) => ({ ...sensor, checked: newState }));
+	}
+
+	function tampilkan() {
+		console.log(
+			'Sensor yang dipilih:',
+			sensors.filter((s) => s.checked)
+		);
+		dropdownOpen = false;
+	}
 </script>
 
 <DeviceStatus name="Nama Device" id="Id Device" status="Online" />
 <hr class="border-t border-gray-200" />
 
 <div class="flex justify-between items-center gap-4 mt-4 mb-6 p-4">
-	<button
-		class="flex items-center border border-gray-300 bg-gray-100 p-2 rounded-lg text-sm text-gray-600 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-	>
-		<img src="/assets/icons/icon-plus.svg" alt="icon plus" class="w-5 h-5 mr-2" />
-		Pilih Sensor
-	</button>
+	<div class="relative">
+		<button
+			class="flex items-center border border-gray-300 bg-gray-100 p-2 rounded-lg text-sm text-gray-600 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+			on:click={() => (dropdownOpen = !dropdownOpen)}
+		>
+			<Plus class="w-5 h-5 mr-2" />
+			Pilih Sensor
+		</button>
 
+		{#if dropdownOpen}
+			<div
+				class="absolute mt-2 left-0 z-10 w-56 bg-white border border-gray-200 rounded-lg shadow-lg"
+			>
+				<div class="flex justify-between items-center px-4 pt-2 mb-2">
+					<h3 class="font-semibold text-gray-800 text-sm">Pilih Sensor</h3>
+					<button class="text-gray-500 hover:text-gray-700" on:click={() => (dropdownOpen = false)}>
+						<X class="w-4 h-4" />
+					</button>
+				</div>
+				<hr class="border-gray-200" />
+
+				<div class="space-y-2 p-4">
+					{#each sensors as sensor, i}
+						<label class="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
+							<input
+								type="checkbox"
+								class="sr-only"
+								bind:checked={sensors[i].checked}
+								id={`sensor-${i}`}
+							/>
+							<span
+								class={`w-5 h-5 flex items-center justify-center rounded ${sensor.checked ? 'bg-orange-400 text-white' : 'bg-gray-200 text-transparent'}`}
+							>
+								<Check class="w-4 h-4" />
+							</span>
+							{sensor.name}
+						</label>
+					{/each}
+
+					<!-- Checkbox Pilih Semua -->
+					<label class="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
+						<input type="checkbox" class="sr-only" checked={selectAll} on:change={toggleAll} />
+						<span
+							class={`w-5 h-5 flex items-center justify-center rounded ${selectAll ? 'bg-orange-400 text-white' : 'bg-gray-200 text-transparent'}`}
+						>
+							<Check class="w-4 h-4" />
+						</span>
+						Pilih Semua
+					</label>
+				</div>
+				<hr class="border-gray-200" />
+
+				<div class="p-4">
+					<button
+						on:click={tampilkan}
+						class="w-full bg-orange-400 hover:bg-orange-500 text-white text-sm font-medium py-2 rounded-lg"
+					>
+						Tampilkan
+					</button>
+				</div>
+			</div>
+		{/if}
+	</div>
+
+	<!-- Bagian filter waktu dan opsi tambahan -->
 	<div class="flex items-center gap-4">
 		<div class="flex items-center gap-2 bg-white border border-gray-300 p-2 rounded-lg shadow-sm">
 			<input
 				type="datetime-local"
 				class="text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
 			/>
-			<img
-				src="/assets/icons/icon-arrow-right.svg"
-				alt="arrow icon"
-				class="w-3 h-3 text-gray-600 cursor-pointer"
-			/>
+			<img src="/assets/icons/icon-arrow-right.svg" alt="arrow" class="w-3 h-3" />
 			<input
 				type="datetime-local"
 				class="text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
 			/>
-			<img
-				src="/assets/icons/icon-calender.svg"
-				alt="calendar icon"
-				class="w-4 h-4 text-gray-600 cursor-pointer"
-			/>
+			<img src="/assets/icons/icon-calender.svg" alt="calendar" class="w-4 h-4" />
 		</div>
 
 		<div class="relative">
@@ -57,8 +135,13 @@
 	</div>
 </div>
 
-<div class="h-[420px] flex items-center justify-center">
-	<SensorPlaceholder />
+<div class="flex flex-col space-y-4">
+	<div class="p-4">
+		<MultiAxisChart />
+	</div>
+	<div class="p-4">
+		<MonitoringTable />
+	</div>
 </div>
 
 <style>
@@ -66,7 +149,6 @@
 		opacity: 0;
 		display: none;
 	}
-
 	input[type='datetime-local']::-webkit-inner-spin-button,
 	input[type='datetime-local']::-webkit-clear-button {
 		display: none;
