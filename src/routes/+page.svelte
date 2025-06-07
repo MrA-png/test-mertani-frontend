@@ -1,6 +1,4 @@
-<script lang="ts">
-	import DetailPemantauan from '../pages/DetailPemantauan.svelte';
-    import '../app.css';
+<script>
+	import { goto } from '$app/navigation';
+	goto('/detail-pemantauan');
 </script>
-
-<DetailPemantauan />
