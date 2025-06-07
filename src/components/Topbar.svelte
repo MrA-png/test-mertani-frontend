@@ -1,5 +1,8 @@
-<div class="w-full bg-white border-b p-4 flex justify-between text-sm text-gray-600">
-    <div>Manajemen Device / <span class="text-black font-semibold">Detail Pemantauan</span></div>
-    <div>Versi 1.0.0</div>
+<div
+	class="w-full bg-white border-b h-[57px] flex items-center justify-between px-6 text-sm text-gray-400"
+>
+	<div>
+		Manajemen Device / <span class="text-black">Detail Pemantauan</span>
+	</div>
+	<div class="text-black">Versi 1.0.0</div>
 </div>
-  
