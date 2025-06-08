@@ -4,11 +4,13 @@
 	import { Plus, X, Check } from 'lucide-svelte';
 	import MultiAxisChart from '../components/chart/MultiAxisChart.svelte';
 	import MonitoringTable from '../components/detail-pemantauan/MonitoringTable.svelte';
+	import GrafikControlPanel from '../components/informasi-device/GrafikControlPanel.svelte';
 
 	let dropdownOpen = false;
 	let showChartAndTable = false;
 	let isFullscreen = false;
 	let selectAll = false;
+	let showGrafikControl = false;
 
 	let sensors = [
 		{ name: 'Water Level', checked: false },
@@ -168,7 +170,9 @@
 	{#if selectedSensors.length > 0}
 		<div class="flex flex-wrap items-center gap-2 px-4">
 			<div class="flex items-center rounded-md border border-gray-300 bg-gray-50">
-				<img src="/assets/icons/cta-sidebar.svg" alt="Settings Icon" class="w-7 h-7" />
+				<button class="flex items-center" on:click={() => (showGrafikControl = !showGrafikControl)}>
+					<img src="/assets/icons/cta-sidebar.svg" alt="Settings Icon" class="w-7 h-7" />
+				</button>
 			</div>
 			{#each selectedSensors as sensor}
 				<div
@@ -198,6 +202,10 @@
 			<SensorPlaceholder />
 		{/if}
 	</div>
+
+	{#if showGrafikControl}
+		<GrafikControlPanel on:close={() => (showGrafikControl = false)} />
+	{/if}
 </div>
 
 <style>

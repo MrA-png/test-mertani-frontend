@@ -2,6 +2,8 @@
 	import '../app.css';
 	import Sidebar from '../components/Sidebar.svelte';
 	import Topbar from '../components/Topbar.svelte';
+	import GrafikControlPanel from '../components/informasi-device/GrafikControlPanel.svelte';
+
 </script>
 
 <div class="flex h-screen overflow-hidden">
@@ -18,6 +20,7 @@
 			<slot />
 		</div>
 	</main>
+	<!-- <GrafikControlPanel /> -->
 </div>
 
 <style>
