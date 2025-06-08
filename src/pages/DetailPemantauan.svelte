@@ -6,14 +6,15 @@
 	import MonitoringTable from '../components/detail-pemantauan/MonitoringTable.svelte';
 
 	let dropdownOpen = false;
+	let showChartAndTable = false;
+	let isFullscreen = false;
+	let selectAll = false;
 
 	let sensors = [
 		{ name: 'Water Level', checked: false },
 		{ name: 'Rainfall', checked: false },
 		{ name: 'Wind Direction', checked: false }
 	];
-
-	let selectAll = false;
 
 	$: selectAll = sensors.every((s) => s.checked);
 
@@ -30,11 +31,6 @@
 		Rainfall: 'bg-blue-400'
 	};
 
-	function tampilkan() {
-		selectedSensors = sensors.filter((s) => s.checked);
-		dropdownOpen = false;
-	}
-
 	function removeSensor(name: string) {
 		sensors = sensors.map((sensor) =>
 			sensor.name === name ? { ...sensor, checked: false } : sensor
@@ -42,10 +38,14 @@
 		selectedSensors = sensors.filter((s) => s.checked);
 	}
 
-	let isFullscreen = false;
-
 	function toggleFullscreen() {
 		isFullscreen = !isFullscreen;
+	}
+
+	function tampilkan() {
+		selectedSensors = sensors.filter((s) => s.checked);
+		showChartAndTable = selectedSensors.length > 0;
+		dropdownOpen = false;
 	}
 </script>
 
@@ -117,7 +117,11 @@
 					<div class="p-4">
 						<button
 							on:click={tampilkan}
-							class="w-full bg-orange-400 hover:bg-orange-500 text-white text-sm font-medium py-2 rounded-lg"
+							disabled={sensors.every((s) => !s.checked)}
+							class="w-full text-sm font-medium py-2 rounded-lg
+								{sensors.every((s) => !s.checked)
+								? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+								: 'bg-orange-400 hover:bg-orange-500 text-white'}"
 						>
 							Tampilkan
 						</button>
@@ -183,12 +187,16 @@
 	{/if}
 
 	<div class="flex flex-col space-y-4">
-		<div class="p-4">
-			<MultiAxisChart bind:isFullscreen={isFullscreen} />
-		</div>
-		<div class="p-4">
-			<MonitoringTable />
-		</div>
+		{#if showChartAndTable}
+			<div class="p-4">
+				<MultiAxisChart bind:isFullscreen {selectedSensors} />
+			</div>
+			<div class="p-4">
+				<MonitoringTable {selectedSensors} />
+			</div>
+		{:else}
+			<SensorPlaceholder />
+		{/if}
 	</div>
 </div>
 
