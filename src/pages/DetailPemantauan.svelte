@@ -8,8 +8,8 @@
 	let dropdownOpen = false;
 
 	let sensors = [
-		{ name: 'Water Level', checked: true },
-		{ name: 'Rainfall', checked: true },
+		{ name: 'Water Level', checked: false },
+		{ name: 'Rainfall', checked: false },
 		{ name: 'Wind Direction', checked: false }
 	];
 
@@ -22,129 +22,189 @@
 		sensors = sensors.map((sensor) => ({ ...sensor, checked: newState }));
 	}
 
+	let selectedSensors = sensors.filter((s) => s.checked);
+
+	const sensorColors: Record<string, string> = {
+		'Wind Direction': 'bg-red-500',
+		'Water Level': 'bg-orange-400',
+		Rainfall: 'bg-blue-400'
+	};
+
 	function tampilkan() {
-		console.log(
-			'Sensor yang dipilih:',
-			sensors.filter((s) => s.checked)
-		);
+		selectedSensors = sensors.filter((s) => s.checked);
 		dropdownOpen = false;
+	}
+
+	function removeSensor(name: string) {
+		sensors = sensors.map((sensor) =>
+			sensor.name === name ? { ...sensor, checked: false } : sensor
+		);
+		selectedSensors = sensors.filter((s) => s.checked);
+	}
+
+	let isFullscreen = false;
+
+	function toggleFullscreen() {
+		isFullscreen = !isFullscreen;
 	}
 </script>
 
-<DeviceStatus name="Nama Device" id="Id Device" status="Online" />
-<hr class="border-t border-gray-200" />
+<div class={`fullscreen-container ${isFullscreen ? 'fullscreen-active' : ''}`}>
+	<DeviceStatus
+		name="Nama Device"
+		id="Id Device"
+		status="Online"
+		{isFullscreen}
+		{toggleFullscreen}
+	/>
+	<hr class="border-t border-gray-200" />
 
-<div class="flex justify-between items-center gap-4 mt-4 mb-6 p-4">
-	<div class="relative">
-		<button
-			class="flex items-center border border-gray-300 bg-gray-100 p-2 rounded-lg text-sm text-gray-600 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-			on:click={() => (dropdownOpen = !dropdownOpen)}
-		>
-			<Plus class="w-5 h-5 mr-2" />
-			Pilih Sensor
-		</button>
-
-		{#if dropdownOpen}
-			<div
-				class="absolute mt-2 left-0 z-10 w-56 bg-white border border-gray-200 rounded-lg shadow-lg"
+	<div class="flex justify-between items-center gap-4 mt-4 mb-2 p-4">
+		<div class="relative">
+			<button
+				class="flex items-center border border-gray-300 bg-gray-50 p-2 rounded-lg text-sm text-gray-600 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+				on:click={() => (dropdownOpen = !dropdownOpen)}
 			>
-				<div class="flex justify-between items-center px-4 pt-2 mb-2">
-					<h3 class="font-semibold text-gray-800 text-sm">Pilih Sensor</h3>
-					<button class="text-gray-500 hover:text-gray-700" on:click={() => (dropdownOpen = false)}>
-						<X class="w-4 h-4" />
-					</button>
-				</div>
-				<hr class="border-gray-200" />
+				<Plus class="w-5 h-5 mr-2" />
+				Pilih Sensor
+			</button>
 
-				<div class="space-y-2 p-4">
-					{#each sensors as sensor, i}
+			{#if dropdownOpen}
+				<div
+					class="absolute mt-2 left-0 z-10 w-56 bg-white border border-gray-200 rounded-lg shadow-lg"
+				>
+					<div class="flex justify-between items-center px-4 pt-2 mb-2">
+						<h3 class="font-semibold text-gray-800 text-sm">Pilih Sensor</h3>
+						<button
+							class="text-gray-500 hover:text-gray-700"
+							on:click={() => (dropdownOpen = false)}
+						>
+							<X class="w-4 h-4" />
+						</button>
+					</div>
+					<hr class="border-gray-200" />
+
+					<div class="space-y-2 p-4">
+						{#each sensors as sensor, i}
+							<label class="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
+								<input
+									type="checkbox"
+									class="sr-only"
+									bind:checked={sensors[i].checked}
+									id={`sensor-${i}`}
+								/>
+								<span
+									class={`w-5 h-5 flex items-center justify-center rounded ${sensor.checked ? 'bg-orange-400 text-white' : 'bg-gray-200 text-transparent'}`}
+								>
+									<Check class="w-4 h-4" />
+								</span>
+								{sensor.name}
+							</label>
+						{/each}
+
 						<label class="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
-							<input
-								type="checkbox"
-								class="sr-only"
-								bind:checked={sensors[i].checked}
-								id={`sensor-${i}`}
-							/>
+							<input type="checkbox" class="sr-only" checked={selectAll} on:change={toggleAll} />
 							<span
-								class={`w-5 h-5 flex items-center justify-center rounded ${sensor.checked ? 'bg-orange-400 text-white' : 'bg-gray-200 text-transparent'}`}
+								class={`w-5 h-5 flex items-center justify-center rounded ${selectAll ? 'bg-orange-400 text-white' : 'bg-gray-200 text-transparent'}`}
 							>
 								<Check class="w-4 h-4" />
 							</span>
-							{sensor.name}
+							Pilih Semua
 						</label>
-					{/each}
+					</div>
+					<hr class="border-gray-200" />
 
-					<!-- Checkbox Pilih Semua -->
-					<label class="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
-						<input type="checkbox" class="sr-only" checked={selectAll} on:change={toggleAll} />
-						<span
-							class={`w-5 h-5 flex items-center justify-center rounded ${selectAll ? 'bg-orange-400 text-white' : 'bg-gray-200 text-transparent'}`}
+					<div class="p-4">
+						<button
+							on:click={tampilkan}
+							class="w-full bg-orange-400 hover:bg-orange-500 text-white text-sm font-medium py-2 rounded-lg"
 						>
-							<Check class="w-4 h-4" />
-						</span>
-						Pilih Semua
-					</label>
+							Tampilkan
+						</button>
+					</div>
 				</div>
-				<hr class="border-gray-200" />
+			{/if}
+		</div>
 
-				<div class="p-4">
-					<button
-						on:click={tampilkan}
-						class="w-full bg-orange-400 hover:bg-orange-500 text-white text-sm font-medium py-2 rounded-lg"
-					>
-						Tampilkan
+		<div class="flex items-center gap-4">
+			<div class="flex items-center gap-2 bg-white border border-gray-300 p-2 rounded-lg shadow-sm">
+				<input
+					type="datetime-local"
+					class="text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+				/>
+				<img src="/assets/icons/icon-arrow-right.svg" alt="arrow" class="w-3 h-3" />
+				<input
+					type="datetime-local"
+					class="text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+				/>
+				<img src="/assets/icons/icon-calender.svg" alt="calendar" class="w-4 h-4" />
+			</div>
+
+			<div class="relative">
+				<select
+					class="block w-auto border border-gray-300 pl-2 pr-10 py-2 rounded-md text-sm text-gray-500 appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+				>
+					<option>Semua Data</option>
+				</select>
+				<img
+					src="/assets/icons/icon-dropdown.svg"
+					alt="dropdown icon"
+					class="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-600 pointer-events-none"
+				/>
+			</div>
+
+			<button
+				class="border border-gray-300 bg-white px-2 py-2 rounded text-sm text-gray-700 hover:bg-gray-100"
+			>
+				<img src="/assets/icons/icon-download.svg" alt="icon download" class="w-5 h-5" />
+			</button>
+		</div>
+	</div>
+
+	{#if selectedSensors.length > 0}
+		<div class="flex flex-wrap items-center gap-2 px-4">
+			<div class="flex items-center rounded-md border border-gray-300 bg-gray-50">
+				<img src="/assets/icons/cta-sidebar.svg" alt="Settings Icon" class="w-7 h-7" />
+			</div>
+			{#each selectedSensors as sensor}
+				<div
+					class="flex items-center gap-2 px-3 py-1 text-sm rounded-md border border-gray-300 bg-gray-50"
+				>
+					<div class="{sensorColors[sensor.name] || 'bg-gray-400'} w-3 h-3 rounded-sm"></div>
+
+					<span class="text-black">{sensor.name}</span>
+
+					<button on:click={() => removeSensor(sensor.name)}>
+						<X class="w-4 h-4 text-gray-400" />
 					</button>
 				</div>
-			</div>
-		{/if}
-	</div>
-
-	<!-- Bagian filter waktu dan opsi tambahan -->
-	<div class="flex items-center gap-4">
-		<div class="flex items-center gap-2 bg-white border border-gray-300 p-2 rounded-lg shadow-sm">
-			<input
-				type="datetime-local"
-				class="text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
-			/>
-			<img src="/assets/icons/icon-arrow-right.svg" alt="arrow" class="w-3 h-3" />
-			<input
-				type="datetime-local"
-				class="text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
-			/>
-			<img src="/assets/icons/icon-calender.svg" alt="calendar" class="w-4 h-4" />
+			{/each}
 		</div>
+	{/if}
 
-		<div class="relative">
-			<select
-				class="block w-auto border border-gray-300 pl-2 pr-10 py-2 rounded-md text-sm text-gray-500 appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
-			>
-				<option>Semua Data</option>
-			</select>
-			<img
-				src="/assets/icons/icon-dropdown.svg"
-				alt="dropdown icon"
-				class="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-600 pointer-events-none"
-			/>
+	<div class="flex flex-col space-y-4">
+		<div class="p-4">
+			<MultiAxisChart bind:isFullscreen={isFullscreen} />
 		</div>
-
-		<button
-			class="border border-gray-300 bg-white px-2 py-2 rounded text-sm text-gray-700 hover:bg-gray-100"
-		>
-			<img src="/assets/icons/icon-download.svg" alt="icon download" class="w-5 h-5" />
-		</button>
-	</div>
-</div>
-
-<div class="flex flex-col space-y-4">
-	<div class="p-4">
-		<MultiAxisChart />
-	</div>
-	<div class="p-4">
-		<MonitoringTable />
+		<div class="p-4">
+			<MonitoringTable />
+		</div>
 	</div>
 </div>
 
 <style>
+	.fullscreen-container {
+		transition: all 0.3s ease-in-out;
+	}
+
+	.fullscreen-active {
+		position: fixed;
+		inset: 0;
+		background-color: white;
+		z-index: 50;
+		overflow: auto;
+	}
+
 	input[type='datetime-local']::-webkit-calendar-picker-indicator {
 		opacity: 0;
 		display: none;
