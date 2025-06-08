@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { ChevronDown, ChevronUp, X } from 'lucide-svelte';
+	import { createEventDispatcher } from 'svelte';
 
 	let tipeOptions = ['Garis', 'Batang', 'Arah Angin'];
-	let open = false;
+	const dispatch = createEventDispatcher();
 
 	let panels = [
 		{ name: 'Rainfall', color: '#2E93FA', axis: 'Kiri', tipe: 'Garis' },
@@ -22,7 +23,7 @@
 	}
 
 	function toggleDropdown(index: number) {
-		dropdownOpen = dropdownOpen.map((_, i) => (i === index ? !dropdownOpen[i] : false)); // 👈 hanya satu buka
+		dropdownOpen = dropdownOpen.map((_, i) => (i === index ? !dropdownOpen[i] : false));
 	}
 
 	function selectTipe(panelIndex: number, option: string) {
@@ -34,142 +35,139 @@
 		console.log(panels);
 	}
 
-	function closePanel() {
-		open = false;
+	function handleClose() {
+		dispatch('close');
 	}
 </script>
 
-{#if open}
-	<div
-		class="fixed top-[57px] right-0 w-[280px] h-[calc(100vh-58px)] bg-white border-l border-gray-200 shadow-lg z-30 text-sm flex flex-col"
-	>
-		<div class="flex items-center justify-between px-4 py-4">
-			<h2 class="font-semibold text-black">Atur Grafik</h2>
-			<button
-				on:click={closePanel}
-				class="text-gray-500 hover:text-gray-700"
-				aria-label="Tutup panel"
-			>
-				<X class="w-5 h-5" />
-			</button>
-		</div>
-		<hr class="border-t border-gray-200" />
-		<div class="flex-1 overflow-y-auto">
-			{#each panels as panel, index}
-				<div class="border-b">
-					<!-- Panel Header -->
-					<button
-						class="w-full flex items-center justify-between px-4 py-3 font-medium text-black hover:bg-gray-50"
-						on:click={() => togglePanel(index)}
-					>
-						<span>{panel.name}</span>
-						{#if expandedPanels[index]}
-							<ChevronUp class="w-4 h-4" />
-						{:else}
-							<ChevronDown class="w-4 h-4" />
-						{/if}
-					</button>
-
-					<!-- Panel Body -->
+<div
+	class="fixed top-[57px] right-0 w-[280px] h-[calc(100vh-58px)] bg-white border-l border-gray-200 shadow-lg z-30 text-sm flex flex-col"
+>
+	<div class="flex items-center justify-between px-4 py-4">
+		<h2 class="font-semibold text-black">Atur Grafik</h2>
+		<button
+			on:click={handleClose}
+			class="text-gray-500 hover:text-gray-700"
+			aria-label="Tutup panel"
+		>
+			<X class="w-5 h-5" />
+		</button>
+	</div>
+	<hr class="border-t border-gray-200" />
+	<div class="flex-1 overflow-y-auto">
+		{#each panels as panel, index}
+			<div class="border-b">
+				<!-- Panel Header -->
+				<button
+					class="w-full flex items-center justify-between px-4 py-3 font-medium text-black hover:bg-gray-50"
+					on:click={() => togglePanel(index)}
+				>
+					<span>{panel.name}</span>
 					{#if expandedPanels[index]}
-						<div class="px-4 pb-4 space-y-4">
-							<!-- Y-Axis -->
-							<div class="flex items-center">
-								<span class="w-24 text-gray-500">Y-Axis</span>
-								<div class="flex gap-2">
-									<button
-										class="px-3 py-1 border rounded text-sm font-normal"
-										class:selected={panel.axis === 'Kiri'}
-										class:bg-white={panel.axis !== 'Kiri'}
-										class:border-amber-500={panel.axis === 'Kiri'}
-										class:text-black={panel.axis === 'Kiri'}
-										on:click={() => toggleAxis(index, 'Kiri')}
-									>
-										Kiri
-									</button>
-									<button
-										class="px-3 py-1 border rounded text-sm font-normal"
-										class:selected={panel.axis === 'Kanan'}
-										class:bg-white={panel.axis !== 'Kanan'}
-										class:border-amber-500={panel.axis === 'Kanan'}
-										class:text-black={panel.axis === 'Kanan'}
-										on:click={() => toggleAxis(index, 'Kanan')}
-									>
-										Kanan
-									</button>
-								</div>
-							</div>
+						<ChevronUp class="w-4 h-4" />
+					{:else}
+						<ChevronDown class="w-4 h-4" />
+					{/if}
+				</button>
 
-							<!-- Tipe Grafik -->
-							<div class="flex items-center">
-								<span id={ `tipe-grafik-label-${index}`} class="w-24 text-gray-500">Tipe Grafik</span
+				<!-- Panel Body -->
+				{#if expandedPanels[index]}
+					<div class="px-4 pb-4 space-y-4">
+						<!-- Y-Axis -->
+						<div class="flex items-center">
+							<span class="w-24 text-gray-500">Y-Axis</span>
+							<div class="flex gap-2">
+								<button
+									class="px-3 py-1 border rounded text-sm font-normal"
+									class:selected={panel.axis === 'Kiri'}
+									class:bg-white={panel.axis !== 'Kiri'}
+									class:border-amber-500={panel.axis === 'Kiri'}
+									class:text-black={panel.axis === 'Kiri'}
+									on:click={() => toggleAxis(index, 'Kiri')}
 								>
-								<div class="relative flex-1">
-									<button
-										aria-labelledby={`tipe-grafik-label-${index}`}
-										class="w-full text-left px-3 py-2 bg-gray-50 border border-gray-300 rounded text-sm text-gray-600 font-medium flex justify-between items-center"
-										on:click={() => toggleDropdown(index)}
-									>
-										{panel.tipe}
-										<svg
-											class="w-4 h-4 text-gray-400"
-											fill="none"
-											viewBox="0 0 24 24"
-											stroke="currentColor"
-										>
-											<path
-												stroke-linecap="round"
-												stroke-linejoin="round"
-												stroke-width="2"
-												d="M19 9l-7 7-7-7"
-											/>
-										</svg>
-									</button>
-
-									{#if dropdownOpen[index]}
-										<ul
-											class="absolute w-full mt-1 bg-white border border-gray-200 rounded-lg shadow z-10"
-										>
-											{#each tipeOptions as option}
-												<li>
-													<button
-														class="w-full text-left px-4 py-2 text-base cursor-pointer hover:bg-gray-100 rounded-lg"
-														class:bg-gray-100={panel.tipe === option}
-														on:click={() => selectTipe(index, option)}
-													>
-														{option}
-													</button>
-												</li>
-											{/each}
-										</ul>
-									{/if}
-								</div>
-							</div>
-
-							<!-- Warna -->
-							<div class="flex items-center">
-								<span class="w-24 text-gray-500">Warna</span>
-								<div class="flex items-center border rounded px-2 py-1 gap-2 flex-1">
-									<div class="w-5 h-5 rounded" style="background-color: {panel.color}"></div>
-									<span class="text-black text-sm">{panel.color}</span>
-								</div>
+									Kiri
+								</button>
+								<button
+									class="px-3 py-1 border rounded text-sm font-normal"
+									class:selected={panel.axis === 'Kanan'}
+									class:bg-white={panel.axis !== 'Kanan'}
+									class:border-amber-500={panel.axis === 'Kanan'}
+									class:text-black={panel.axis === 'Kanan'}
+									on:click={() => toggleAxis(index, 'Kanan')}
+								>
+									Kanan
+								</button>
 							</div>
 						</div>
-					{/if}
-				</div>
-			{/each}
-		</div>
 
-		<div class="p-4 border-t border-gray-200 bg-white sticky bottom-0 z-10">
-			<button
-				class="w-full py-2 text-sm border border-amber-500 text-amber-500 rounded hover:bg-amber-50 font-medium"
-				on:click={simpanPerubahan}
-			>
-				Simpan perubahan
-			</button>
-		</div>
+						<!-- Tipe Grafik -->
+						<div class="flex items-center">
+							<span id={`tipe-grafik-label-${index}`} class="w-24 text-gray-500">Tipe Grafik</span>
+							<div class="relative flex-1">
+								<button
+									aria-labelledby={`tipe-grafik-label-${index}`}
+									class="w-full text-left px-3 py-2 bg-gray-50 border border-gray-300 rounded text-sm text-gray-600 font-medium flex justify-between items-center"
+									on:click={() => toggleDropdown(index)}
+								>
+									{panel.tipe}
+									<svg
+										class="w-4 h-4 text-gray-400"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke="currentColor"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M19 9l-7 7-7-7"
+										/>
+									</svg>
+								</button>
+
+								{#if dropdownOpen[index]}
+									<ul
+										class="absolute w-full mt-1 bg-white border border-gray-200 rounded-lg shadow z-10"
+									>
+										{#each tipeOptions as option}
+											<li>
+												<button
+													class="w-full text-left px-4 py-2 text-base cursor-pointer hover:bg-gray-100 rounded-lg"
+													class:bg-gray-100={panel.tipe === option}
+													on:click={() => selectTipe(index, option)}
+												>
+													{option}
+												</button>
+											</li>
+										{/each}
+									</ul>
+								{/if}
+							</div>
+						</div>
+
+						<!-- Warna -->
+						<div class="flex items-center">
+							<span class="w-24 text-gray-500">Warna</span>
+							<div class="flex items-center border rounded px-2 py-1 gap-2 flex-1">
+								<div class="w-5 h-5 rounded" style="background-color: {panel.color}"></div>
+								<span class="text-black text-sm">{panel.color}</span>
+							</div>
+						</div>
+					</div>
+				{/if}
+			</div>
+		{/each}
 	</div>
-{/if}
+
+	<div class="p-4 border-t border-gray-200 bg-white sticky bottom-0 z-10">
+		<button
+			class="w-full py-2 text-sm border border-amber-500 text-amber-500 rounded hover:bg-amber-50 font-medium"
+			on:click={simpanPerubahan}
+		>
+			Simpan perubahan
+		</button>
+	</div>
+</div>
 
 <style>
 	button.selected {
