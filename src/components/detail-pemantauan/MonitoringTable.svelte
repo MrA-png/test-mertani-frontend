@@ -1,28 +1,34 @@
 <script lang="ts">
-	interface MonitoringData {
-		datetime: string;
-		rainfall: number;
-		waterLevel: number;
-		windDirection: number;
+	import { labels, datasetMap } from '$lib/data/sensorData';
+	export let selectedSensors: { name: string; checked: boolean }[] = [];
+
+	function formatDateTime(datetime: string): string {
+		const date = new Date(datetime);
+		const day = String(date.getDate()).padStart(2, '0');
+		const month = String(date.getMonth() + 1).padStart(2, '0'); // bulan dimulai dari 0
+		const year = date.getFullYear();
+		const hours = String(date.getHours()).padStart(2, '0');
+		const minutes = String(date.getMinutes()).padStart(2, '0');
+		return `${day}-${month}-${year} ${hours}:${minutes}`;
 	}
 
-	const data: MonitoringData[] = [
-		{ datetime: '2025-01-11 17:00', rainfall: 0, waterLevel: 80, windDirection: 76 },
-		{ datetime: '2025-01-11 16:00', rainfall: 1, waterLevel: 79, windDirection: 75 },
-		{ datetime: '2025-01-11 15:00', rainfall: 0, waterLevel: 78, windDirection: 77 },
-		{ datetime: '2025-01-11 14:00', rainfall: 0, waterLevel: 78, windDirection: 76 },
-		{ datetime: '2025-01-11 13:00', rainfall: 2, waterLevel: 77, windDirection: 74 },
-		{ datetime: '2025-01-11 12:00', rainfall: 0, waterLevel: 76, windDirection: 73 },
-		{ datetime: '2025-01-11 17:00', rainfall: 0, waterLevel: 80, windDirection: 76 },
-		{ datetime: '2025-01-11 16:00', rainfall: 1, waterLevel: 79, windDirection: 75 },
-		{ datetime: '2025-01-11 15:00', rainfall: 0, waterLevel: 78, windDirection: 77 },
-		{ datetime: '2025-01-11 14:00', rainfall: 0, waterLevel: 78, windDirection: 76 },
-		{ datetime: '2025-01-11 13:00', rainfall: 2, waterLevel: 77, windDirection: 74 },
-		{ datetime: '2025-01-11 12:00', rainfall: 0, waterLevel: 76, windDirection: 73 }
-	];
+	$: selectedSensorNames = selectedSensors.filter((s) => s.checked).map((s) => s.name);
 
-	$: sortedData = [...data].sort(
-		(a, b) => new Date(b.datetime).getTime() - new Date(a.datetime).getTime()
+	$: tableData = labels.map((datetime, index) => {
+		const row: Record<string, string | number> = {
+			datetime: formatDateTime(datetime)
+		};
+		for (const sensor of selectedSensorNames) {
+			row[sensor] = datasetMap[sensor]?.data[index] ?? '-';
+		}
+		return row;
+	});
+
+	// Tetap gunakan data asli labels untuk penyortiran
+	$: sortedData = [...tableData].sort(
+		(a, b) =>
+			new Date(labels[tableData.indexOf(b)]).getTime() -
+			new Date(labels[tableData.indexOf(a)]).getTime()
 	);
 </script>
 
@@ -36,26 +42,21 @@
 		<table class="w-full table-auto text-sm border border-gray-200">
 			<thead class="bg-gray-100">
 				<tr>
-					<th class="px-4 py-2 text-left font-normal border-b whitespace-nowrap">Tanggal & Waktu</th
-					>
-					<th class="px-4 py-2 text-left border-b font-normal whitespace-nowrap"
-						>Rainfall <span class="text-xs">(mm)</span></th
-					>
-					<th class="px-4 py-2 text-left font-normal border-b whitespace-nowrap"
-						>Water Level <span class="text-xs">(cm)</span></th
-					>
-					<th class="px-4 py-2 text-left font-normal border-b whitespace-nowrap"
-						>Wind Direction <span class="text-xs">(°)</span></th
-					>
+					<th class="px-4 py-2 text-left font-normal border-b whitespace-nowrap">Tanggal</th>
+					{#each selectedSensorNames as sensor}
+						<th class="px-4 py-2 text-left font-normal border-b whitespace-nowrap">
+							{datasetMap[sensor]?.label}
+						</th>
+					{/each}
 				</tr>
 			</thead>
 			<tbody>
 				{#each sortedData as row}
-					<tr class="border-t hover:bg-gray-50 relative">
+					<tr class="border-t hover:bg-gray-50">
 						<td class="px-4 py-2 border-b whitespace-nowrap">{row.datetime}</td>
-						<td class="px-4 py-2 border-b whitespace-nowrap">{row.rainfall}</td>
-						<td class="px-4 py-2 border-b whitespace-nowrap">{row.waterLevel}</td>
-						<td class="px-4 py-2 border-b whitespace-nowrap">{row.windDirection}</td>
+						{#each selectedSensorNames as sensor}
+							<td class="px-4 py-2 border-b whitespace-nowrap">{row[sensor]}</td>
+						{/each}
 					</tr>
 				{/each}
 			</tbody>

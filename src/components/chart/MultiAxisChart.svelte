@@ -3,9 +3,12 @@
 	import { Chart, registerables, type ChartData, type ChartOptions } from 'chart.js';
 	import 'chartjs-adapter-date-fns';
 	import CrosshairPlugin from 'chartjs-plugin-crosshair';
+	import { labels, datasetMap } from '$lib/data/sensorData';
 
 	export let isFullscreen: boolean;
-	
+
+	export let selectedSensors: { name: string; checked: boolean }[] = [];
+
 	const initialCanvasWidth = 924;
 	const initialCanvasHeight = 400;
 
@@ -14,49 +17,15 @@
 
 	let chart: Chart;
 
+	$: if (chart && selectedSensors) {
+		const newDatasets = selectedSensors.map((sensor) => datasetMap[sensor.name]).filter(Boolean);
+		chart.data.datasets = newDatasets;
+		chart.update();
+	}
+
 	const data: ChartData<'line'> = {
-		labels: [
-			'2025-01-11',
-			'2025-01-12',
-			'2025-01-13',
-			'2025-01-14',
-			'2025-01-15',
-			'2025-01-16',
-			'2025-01-17',
-			'2025-01-18',
-			'2025-01-19',
-			'2025-01-20',
-			'2025-01-21'
-		],
-		datasets: [
-			{
-				label: 'Rainfall (mm)',
-				data: [12, 10, 28, 25, 13, 21, 7, 10, 14, 5, 9],
-				borderColor: '#3b82f6',
-				backgroundColor: '#3b82f6',
-				yAxisID: 'y1',
-				tension: 0.4,
-				pointRadius: 0
-			},
-			{
-				label: 'Wind Direction (°)',
-				data: [140, 120, 100, 260, 330, 310, 300, 280, 180, 120, 130],
-				borderColor: '#ef4444',
-				backgroundColor: '#ef4444',
-				yAxisID: 'y2',
-				tension: 0.4,
-				pointRadius: 0
-			},
-			{
-				label: 'Water Level (cm)',
-				data: [28, 26, 34, 30, 32, 60, 55, 50, 54, 32, 35],
-				borderColor: '#f59e0b',
-				backgroundColor: '#f59e0b',
-				yAxisID: 'y3',
-				tension: 0.4,
-				pointRadius: 0
-			}
-		]
+		labels,
+		datasets: []
 	};
 
 	const options: ChartOptions<'line'> = {
@@ -77,16 +46,59 @@
 				}
 			},
 			tooltip: {
+				usePointStyle: true,
 				callbacks: {
+					title: (tooltipItems) => {
+						const date = tooltipItems[0].parsed.x;
+						return new Date(date)
+							.toLocaleString('en-GB', {
+								day: '2-digit',
+								month: '2-digit',
+								year: 'numeric',
+								hour: '2-digit',
+								minute: '2-digit',
+								second: '2-digit'
+							})
+							.replace(',', '');
+					},
 					label: (context) => {
 						const value = context.parsed.y;
 						const label = context.dataset.label || '';
 
-						if (label.includes('Rainfall')) return `Rainfall: ${value} mm`;
-						if (label.includes('Water Level')) return `Water Level: ${value} cm`;
+						if (label.includes('Rainfall')) return `Rainfall : ${value} mm`;
+						if (label.includes('Water Level')) return `Water level : ${value} cm`;
 						if (label.includes('Wind Direction')) return `Wind Direction: ${value}° BL`;
 
-						return `${label}: ${value}`;
+						return `${label} : ${value}`;
+					},
+					labelPointStyle: (context) => {
+						const label = context.dataset.label || '';
+						let color = '#000';
+
+						if (label.includes('Rainfall'))
+							color = '#3b82f6'; // blue
+						else if (label.includes('Water Level'))
+							color = '#f59e0b'; // orange
+						else if (label.includes('Wind Direction')) color = '#ef4444'; // red
+
+						return {
+							pointStyle: 'line',
+							rotation: 90,
+							borderWidth: 2
+						};
+					},
+					labelColor: (context) => {
+						const label = context.dataset.label || '';
+						let color = '#000';
+
+						if (label.includes('Rainfall')) color = '#3b82f6';
+						else if (label.includes('Water Level')) color = '#f59e0b';
+						else if (label.includes('Wind Direction')) color = '#ef4444';
+
+						return {
+							borderColor: color,
+							backgroundColor: color
+						};
 					}
 				}
 			},
