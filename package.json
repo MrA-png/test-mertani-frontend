@@ -20,6 +20,7 @@
 		"@sveltejs/kit": "^2.16.0",
 		"@sveltejs/vite-plugin-svelte": "^5.0.0",
 		"@tailwindcss/postcss": "^4.1.8",
+		"@types/chart.js": "^4.0.1",
 		"autoprefixer": "^10.4.21",
 		"eslint": "^9.18.0",
 		"eslint-config-prettier": "^10.0.1",
@@ -38,6 +39,7 @@
 	"dependencies": {
 		"chart.js": "^4.4.9",
 		"chartjs-adapter-date-fns": "^3.0.0",
+		"chartjs-plugin-crosshair": "^2.0.0",
 		"lucide-svelte": "^0.513.0"
 	}
 }

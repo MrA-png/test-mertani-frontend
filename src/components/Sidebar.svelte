@@ -66,7 +66,6 @@
 		</div>
 
 		<div class="py-4 px-4">
-			<!-- Additional footer/sidebar controls can go here -->
 		</div>
 	</aside>
 </div>

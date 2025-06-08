@@ -27,21 +27,24 @@
 </script>
 
 <div class="border rounded-lg bg-white">
-	<h2 class="text-lg font-semibold p-4">Data Pemantauan</h2>
+	<div class="flex font-normal text-xl p-4 items-center">
+		<span>Data Pemantauan</span>
+	</div>
 	<hr class="border-t border-gray-200 py-2" />
 
 	<div class="overflow-x-auto p-4">
 		<table class="w-full table-auto text-sm border border-gray-200">
 			<thead class="bg-gray-100">
 				<tr>
-					<th class="px-4 py-2 text-left border-b whitespace-nowrap">Tanggal & Waktu</th>
-					<th class="px-4 py-2 text-left border-b whitespace-nowrap"
+					<th class="px-4 py-2 text-left font-normal border-b whitespace-nowrap">Tanggal & Waktu</th
+					>
+					<th class="px-4 py-2 text-left border-b font-normal whitespace-nowrap"
 						>Rainfall <span class="text-xs">(mm)</span></th
 					>
-					<th class="px-4 py-2 text-left border-b whitespace-nowrap"
+					<th class="px-4 py-2 text-left font-normal border-b whitespace-nowrap"
 						>Water Level <span class="text-xs">(cm)</span></th
 					>
-					<th class="px-4 py-2 text-left border-b whitespace-nowrap"
+					<th class="px-4 py-2 text-left font-normal border-b whitespace-nowrap"
 						>Wind Direction <span class="text-xs">(°)</span></th
 					>
 				</tr>
