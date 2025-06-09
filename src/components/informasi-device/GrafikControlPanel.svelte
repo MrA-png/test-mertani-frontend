@@ -14,6 +14,10 @@
 	let expandedPanels = panels.map(() => true);
 	let dropdownOpen = panels.map(() => false);
 
+	function updateColor(index: number, newColor: string) {
+		panels[index].color = newColor;
+	}
+
 	function toggleAxis(panelIndex: number, axis: string) {
 		panels[panelIndex].axis = axis;
 	}
@@ -146,12 +150,21 @@
 						</div>
 
 						<!-- Warna -->
-						<div class="flex items-center">
+						<div class="flex items-center relative">
 							<span class="w-24 text-gray-500">Warna</span>
-							<div class="flex items-center border rounded px-2 py-1 gap-2 flex-1">
+
+							<label
+								class="flex items-center border rounded px-2 py-1 gap-2 flex-1 cursor-pointer bg-white"
+							>
 								<div class="w-5 h-5 rounded" style="background-color: {panel.color}"></div>
 								<span class="text-black text-sm">{panel.color}</span>
-							</div>
+								<input
+									type="color"
+									value={panel.color}
+									on:input={(e) => updateColor(index, e.target.value)}
+									class="sr-only"
+								/>
+							</label>
 						</div>
 					</div>
 				{/if}
