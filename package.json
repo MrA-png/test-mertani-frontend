@@ -41,7 +41,6 @@
 		"chartjs-adapter-date-fns": "^3.0.0",
 		"chartjs-plugin-crosshair": "^2.0.0",
 		"lucide-svelte": "^0.513.0",
-		"svelte-color-picker": "^1.0.7",
 		"wx-svelte-core": "^2.1.1"
 	}
 }

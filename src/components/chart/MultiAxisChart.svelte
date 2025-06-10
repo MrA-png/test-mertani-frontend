@@ -17,11 +17,17 @@
 
 	let chart: Chart;
 
-	$: if (chart && selectedSensors) {
-		const newDatasets = selectedSensors.map((sensor) => datasetMap[sensor.name]).filter(Boolean);
-		chart.data.datasets = newDatasets;
-		chart.update();
+	export let panels: Array<{ name: string; color: string; axis: string; tipe: string }> = [];
+
+	$: if (chart && panels.length > 0) {
+		updateChart();
 	}
+
+	// $: if (chart && selectedSensors) {
+	// 	const newDatasets = selectedSensors.map((sensor) => datasetMap[sensor.name]).filter(Boolean);
+	// 	chart.data.datasets = newDatasets;
+	// 	chart.update();
+	// }
 
 	const data: ChartData<'line'> = {
 		labels,
@@ -169,28 +175,77 @@
 		}
 	};
 	onMount(() => {
-		chart = new Chart(canvas, {
-			type: 'line',
-			data,
-			options
-		});
+		chart = new Chart(canvas, { type: 'line', data, options });
+		updateChart();
 	});
 
 	afterUpdate(() => {
-		if (!isFullscreen && chart) {
-			canvas.style.width = `${initialCanvasWidth}px`;
-			canvas.style.height = `${initialCanvasHeight}px`;
-			canvas.width = initialCanvasWidth * 2;
-			canvas.height = initialCanvasHeight * 2;
+		if (!isFullscreen) {
+			canvas.width = 924 * 2;
+			canvas.height = 400 * 2;
 			chart.resize();
 		}
 	});
 
-	onDestroy(() => {
-		if (chart) {
-			chart.destroy();
-		}
-	});
+	onDestroy(() => chart.destroy());
+
+	function updateChart() {
+		if (!chart) return;
+
+		const xScale = {
+			x: {
+				type: 'time',
+				time: {
+					unit: 'day',
+					tooltipFormat: 'dd/MM/yyyy',
+					displayFormats: {
+						day: 'dd/MM/yyyy'
+					}
+				},
+				grid: {
+					display: false
+				}
+			}
+		};
+
+		const newScales: any = { ...xScale };
+
+		const datasets = panels.map((panel, index) => {
+			const axisId = `y${index + 1}`;
+
+			newScales[axisId] = {
+				type: 'linear',
+				display: true,
+				position: panel.axis === 'Kiri' ? 'left' : 'right',
+				title: {
+					display: true,
+					text: panel.name
+				},
+				grid: {
+					drawOnChartArea: index === 0 
+				},
+				min: 0
+			};
+
+			return {
+				label: panel.name,
+				data: datasetMap[panel.name]?.data ?? [],
+				borderColor: panel.color,
+				backgroundColor: panel.color,
+				yAxisID: axisId,
+				type: panel.tipe === 'Batang' ? 'bar' : 'line',
+				fill: false,
+				pointRadius: panel.tipe === 'Batang' ? undefined : 0, 
+				tension: panel.tipe === 'Batang' ? undefined : 0.4, 
+				borderWidth: 2
+			};
+		});
+
+		// Update chart config
+		chart.options.scales = newScales;
+		chart.data.datasets = datasets;
+		chart.update();
+	}
 </script>
 
 <canvas bind:this={canvas} class="bg-white" style="width: 924px; height: 400px;"></canvas>

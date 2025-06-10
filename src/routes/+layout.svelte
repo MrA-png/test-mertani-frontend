@@ -2,7 +2,7 @@
 	import '../app.css';
 	import Sidebar from '../components/Sidebar.svelte';
 	import Topbar from '../components/Topbar.svelte';
-	import GrafikControlPanel from '../components/informasi-device/GrafikControlPanel.svelte';
+	import GrafikControlPanel from '../components/detail-pemantauan/GrafikControlPanel.svelte';
 
 </script>
 
