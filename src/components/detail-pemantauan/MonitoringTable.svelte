@@ -3,7 +3,7 @@
 	export let selectedSensors: { name: string; checked: boolean }[] = [];
 
 	const sensorNameMap: Record<string, string> = {
-		Rainfall: 'Rainfall (mm)',
+		'Rainfall': 'Rainfall (mm)',
 		'Wind Direction': 'Wind Direction (°)',
 		'Water Level': 'Water Level (cm)'
 	};

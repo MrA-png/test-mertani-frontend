@@ -17,11 +17,24 @@
 
 	let chart: Chart;
 
+	export let chartData: {
+		labels: Date[];
+		datasets: {
+			label: string;
+			data: number[];
+			borderColor: string;
+			backgroundColor: string;
+			yAxisID: string;
+			tension: number;
+			fill: boolean;
+		}[];
+	};
+
 	export let panels: Array<{ name: string; color: string; axis: string; tipe: string }> = [];
 
-	$: if (chart && panels.length > 0) {
-		updateChart();
-	}
+	// $: if (chart && panels.length > 0) {
+	// 	updateChart();
+	// }
 
 	// $: if (chart && selectedSensors) {
 	// 	const newDatasets = selectedSensors.map((sensor) => datasetMap[sensor.name]).filter(Boolean);
@@ -180,17 +193,29 @@
 	});
 
 	afterUpdate(() => {
-		if (!isFullscreen) {
-			canvas.width = 924 * 2;
-			canvas.height = 400 * 2;
+		if (!isFullscreen && chart) {
+			canvas.style.width = `${initialCanvasWidth}px`;
+			canvas.style.height = `${initialCanvasHeight}px`;
+			canvas.width = initialCanvasWidth * 2;
+			canvas.height = initialCanvasHeight * 2;
 			chart.resize();
 		}
+		updateChart();
 	});
 
 	onDestroy(() => chart.destroy());
 
 	function updateChart() {
 		if (!chart) return;
+
+		const isChartDataAvailable = chartData?.labels?.length > 0 && chartData?.datasets?.length > 0;
+
+		if (isChartDataAvailable) {
+			chart.data.labels = chartData.labels;
+			chart.data.datasets = chartData.datasets;
+			chart.update();
+			return; 
+		}
 
 		const xScale = {
 			x: {
@@ -222,7 +247,7 @@
 					text: panel.name
 				},
 				grid: {
-					drawOnChartArea: index === 0 
+					drawOnChartArea: index === 0
 				},
 				min: 0
 			};
@@ -235,8 +260,8 @@
 				yAxisID: axisId,
 				type: panel.tipe === 'Batang' ? 'bar' : 'line',
 				fill: false,
-				pointRadius: panel.tipe === 'Batang' ? undefined : 0, 
-				tension: panel.tipe === 'Batang' ? undefined : 0.4, 
+				pointRadius: panel.tipe === 'Batang' ? undefined : 0,
+				tension: panel.tipe === 'Batang' ? undefined : 0.4,
 				borderWidth: 2
 			};
 		});
