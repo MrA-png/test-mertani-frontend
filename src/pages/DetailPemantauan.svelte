@@ -8,8 +8,15 @@
 	import flatpickr from 'flatpickr';
 	import 'flatpickr/dist/themes/airbnb.css';
 	import { onMount } from 'svelte';
+	import { format, subMonths } from 'date-fns';
+	import { labels, datasetMap } from '$lib/data/sensorData';
 
 	let dateInput: HTMLInputElement;
+	let selectedDateRange: [Date, Date] | null = null;
+	let startDate: Date;
+	let endDate: Date;
+	let originalStartDate: Date | null = null;
+	let originalEndDate: Date | null = null;
 
 	let dropdownOpen = false;
 	let showChartAndTable = false;
@@ -33,8 +40,61 @@
 	let selected = options[0];
 	let show = false;
 
+	let chartData = { labels: [], datasets: [] };
+
+	function generateRandomChartData(start: Date, end: Date) {
+		const timestamps: Date[] = [];
+		const current = new Date(start);
+
+		// Loop per 1 hari
+		while (current <= end) {
+			timestamps.push(new Date(current));
+			current.setDate(current.getDate() + 1);
+		}
+
+		const datasets = selectedSensors.map((sensor) => {
+			const matchedKey = Object.keys(datasetMap).find((key) =>
+				key.toLowerCase().includes(sensor.name.toLowerCase())
+			);
+
+			const base = matchedKey ? datasetMap[matchedKey] : null;
+
+			return {
+				label: base?.label || sensor.name,
+				borderColor: base?.borderColor || '#000',
+				backgroundColor: base?.backgroundColor || '#00000033',
+				yAxisID: base?.yAxisID || 'y1',
+				tension: base?.tension ?? 0.3,
+				pointRadius: base?.pointRadius ?? 0,
+				data: timestamps.map(() => Math.floor(Math.random() * 100))
+			};
+		});
+
+		return {
+			labels: timestamps,
+			datasets
+		};
+	}
+
+	function updateChartByDateRange() {
+		if (!startDate || !endDate) return;
+
+		console.log('Menampilkan data dari:', startDate, 'sampai:', endDate);
+
+		chartData = generateRandomChartData(startDate, endDate);
+		console.log(chartData);
+		showChartAndTable = selectedSensors.length > 0;
+	}
+
 	onMount(() => {
-		flatpickr(dateInput, {
+		const now = new Date();
+		const oneMonthAgo = subMonths(now, 1);
+
+		startDate = oneMonthAgo;
+		endDate = now;
+		selectedDateRange = [startDate, endDate];
+
+		const fp = flatpickr(dateInput, {
 			mode: 'range',
 			enableTime: true,
 			time_24hr: true,
@@ -46,8 +106,110 @@
 			locale: {
 				firstDayOfWeek: 1,
 				rangeSeparator: ' → '
+			},
+			defaultDate: [format(oneMonthAgo, 'yyyy-MM-dd HH:mm'), format(now, 'yyyy-MM-dd HH:mm')],
+			onOpen: () => {
+				originalStartDate = startDate;
+				originalEndDate = endDate;
+			},
+			onChange: (selectedDates: Date[]) => {
+				if (selectedDates.length === 2) {
+					startDate = selectedDates[0];
+					endDate = selectedDates[1];
+				}
+			},
+			onReady: (_, __, instance) => {
+				if (instance.calendarContainer.querySelector('.custom-controls')) return;
+
+				// ===== Custom Time Container Styling =====
+				const timeContainer = instance.calendarContainer.querySelector('.flatpickr-time');
+				if (timeContainer) {
+					(timeContainer as HTMLDivElement).style.display = 'flex';
+					(timeContainer as HTMLDivElement).style.justifyContent = 'space-between';
+					(timeContainer as HTMLDivElement).style.gap = '1rem';
+				}
+
+				// ===== Buttons Wrapper =====
+				const customControls = document.createElement('div');
+				customControls.className = 'custom-controls';
+				customControls.style.display = 'flex';
+				customControls.style.justifyContent = 'space-between';
+				customControls.style.alignItems = 'center';
+				customControls.style.padding = '0.5rem';
+				customControls.style.marginTop = '0.5rem';
+
+				// Button Hari Ini
+				const todayBtn = document.createElement('button');
+				todayBtn.textContent = 'Hari ini';
+				todayBtn.style.backgroundColor = '#f59e0b';
+				todayBtn.style.color = '#fff';
+				todayBtn.style.border = 'none';
+				todayBtn.style.padding = '6px 12px';
+				todayBtn.style.borderRadius = '4px';
+				todayBtn.style.cursor = 'pointer';
+
+				todayBtn.addEventListener('click', () => {
+					const now = new Date();
+					startDate = now;
+					endDate = now;
+					selectedDateRange = [startDate, endDate];
+					instance.setDate([now, now], true); 
+				});
+
+				// Buttons Ga Jadi + OK
+				const rightButtons = document.createElement('div');
+				rightButtons.style.display = 'flex';
+				rightButtons.style.gap = '0.5rem';
+
+				// Ga Jadi
+				const cancelBtn = document.createElement('button');
+				cancelBtn.textContent = 'Ga Jadi';
+				cancelBtn.style.background = 'none';
+				cancelBtn.style.border = 'none';
+				cancelBtn.style.color = '#f59e0b';
+				cancelBtn.style.padding = '6px 12px';
+				cancelBtn.style.borderRadius = '4px';
+				cancelBtn.style.cursor = 'pointer';
+
+				cancelBtn.addEventListener('click', () => {
+					if (originalStartDate && originalEndDate) {
+						startDate = originalStartDate;
+						endDate = originalEndDate;
+						selectedDateRange = [startDate, endDate];
+						instance.setDate([startDate, endDate], true);
+					}
+					instance.close();
+				});
+
+				// OK
+				const okBtn = document.createElement('button');
+				okBtn.textContent = 'OK';
+				okBtn.style.backgroundColor = '#f59e0b';
+				okBtn.style.color = '#fff';
+				okBtn.style.border = 'none';
+				okBtn.style.padding = '6px 12px';
+				okBtn.style.borderRadius = '4px';
+				okBtn.style.cursor = 'pointer';
+
+				okBtn.addEventListener('click', () => {
+					if (startDate && endDate) {
+						selectedDateRange = [startDate, endDate];
+						updateChartByDateRange();
+					}
+					instance.close();
+				});
+
+				rightButtons.appendChild(cancelBtn);
+				rightButtons.appendChild(okBtn);
+
+				customControls.appendChild(todayBtn);
+				customControls.appendChild(rightButtons);
+
+				instance.calendarContainer.appendChild(customControls);
 			}
 		});
+
+		updateChartByDateRange();
 	});
 
 	function selectOption(option: string) {
@@ -202,9 +364,8 @@
 				<input
 					bind:this={dateInput}
 					placeholder="Pilih rentang tanggal & waktu"
-					class="text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 w-[320px]"
+					class="text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 w-[300px]"
 				/>
-
 				<img src="/assets/icons/icon-calender.svg" alt="calendar" class="w-4 h-4" />
 			</div>
 
@@ -276,10 +437,10 @@
 	<div class="flex flex-col space-y-4">
 		{#if showChartAndTable}
 			<div class="p-4">
-				<MultiAxisChart bind:isFullscreen {selectedSensors} panels={chartSettings} />
+				<MultiAxisChart bind:isFullscreen {selectedSensors} panels={chartSettings} {chartData} />
 			</div>
 			<div class="p-4">
-				<MonitoringTable {selectedSensors} />
+				<MonitoringTable {selectedSensors} {chartData}/>
 			</div>
 		{:else}
 			<SensorPlaceholder />
