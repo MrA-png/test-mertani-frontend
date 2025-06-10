@@ -5,6 +5,11 @@
 	import MultiAxisChart from '../components/chart/MultiAxisChart.svelte';
 	import MonitoringTable from '../components/detail-pemantauan/MonitoringTable.svelte';
 	import GrafikControlPanel from '../components/detail-pemantauan/GrafikControlPanel.svelte';
+	import flatpickr from 'flatpickr';
+	import 'flatpickr/dist/themes/airbnb.css';
+	import { onMount } from 'svelte';
+
+	let dateInput: HTMLInputElement;
 
 	let dropdownOpen = false;
 	let showChartAndTable = false;
@@ -24,10 +29,39 @@
 		{ name: 'Water Level (cm)', color: '#f59e0b', axis: 'Kiri', tipe: 'Garis' }
 	];
 
-	function handleUpdate(event) {
+	let options = ['Semua Data', 'Per 30 Menit', 'Per 1 Jam', 'Hari', 'Minggu', 'Bulan', 'Tahun'];
+	let selected = options[0];
+	let show = false;
+
+	onMount(() => {
+		flatpickr(dateInput, {
+			mode: 'range',
+			enableTime: true,
+			time_24hr: true,
+			dateFormat: 'Y-m-d H:i',
+			defaultHour: 0,
+			defaultMinute: 0,
+			minuteIncrement: 1,
+			showMonths: 2,
+			locale: {
+				firstDayOfWeek: 1,
+				rangeSeparator: ' → '
+			}
+		});
+	});
+
+	function selectOption(option: string) {
+		selected = option;
+		show = false;
+	}
+
+	function handleUpdate(event: CustomEvent) {
 		const updatedPanels = event.detail.panels;
-		chartSettings = updatedPanels.filter((p) =>
-			selectedSensors.some((s) => p.name.toLowerCase().includes(s.name.toLowerCase()))
+
+		chartSettings = updatedPanels.filter((p: { name: string }) =>
+			selectedSensors.some((s: { name: string }) =>
+				p.name.toLowerCase().includes(s.name.toLowerCase())
+			)
 		);
 	}
 
@@ -166,28 +200,46 @@
 		<div class="flex items-center gap-4">
 			<div class="flex items-center gap-2 bg-white border border-gray-300 p-2 rounded-lg shadow-sm">
 				<input
-					type="datetime-local"
-					class="text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+					bind:this={dateInput}
+					placeholder="Pilih rentang tanggal & waktu"
+					class="text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 w-[320px]"
 				/>
-				<img src="/assets/icons/icon-arrow-right.svg" alt="arrow" class="w-3 h-3" />
-				<input
-					type="datetime-local"
-					class="text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
-				/>
+
 				<img src="/assets/icons/icon-calender.svg" alt="calendar" class="w-4 h-4" />
 			</div>
 
-			<div class="relative">
-				<select
-					class="block w-auto border border-gray-300 pl-2 pr-10 py-2 rounded-md text-sm text-gray-500 appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
-				>
-					<option>Semua Data</option>
-				</select>
-				<img
-					src="/assets/icons/icon-dropdown.svg"
-					alt="dropdown icon"
-					class="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-600 pointer-events-none"
-				/>
+			<div class="relative inline-block text-left w-40">
+				<div>
+					<button
+						type="button"
+						class="inline-flex justify-between items-center w-full rounded-md bg-white px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400"
+						on:click={() => (show = !show)}
+					>
+						{selected}
+						<img
+							src="/assets/icons/icon-dropdown.svg"
+							alt="dropdown icon"
+							class="ml-2 w-4 h-4 text-gray-600"
+						/>
+					</button>
+				</div>
+
+				{#if show}
+					<div
+						class="absolute z-10 mt-2 w-full rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+					>
+						<div class="py-1">
+							{#each options as option}
+								<div
+									class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+									on:click={() => selectOption(option)}
+								>
+									{option}
+								</div>
+							{/each}
+						</div>
+					</div>
+				{/if}
 			</div>
 
 			<button
@@ -250,6 +302,10 @@
 		background-color: white;
 		z-index: 50;
 		overflow: auto;
+	}
+
+	.flatpickr-calendar {
+		z-index: 1000;
 	}
 
 	input[type='datetime-local']::-webkit-calendar-picker-indicator {
