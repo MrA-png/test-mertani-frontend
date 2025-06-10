@@ -4,7 +4,7 @@
 	import { Plus, X, Check } from 'lucide-svelte';
 	import MultiAxisChart from '../components/chart/MultiAxisChart.svelte';
 	import MonitoringTable from '../components/detail-pemantauan/MonitoringTable.svelte';
-	import GrafikControlPanel from '../components/informasi-device/GrafikControlPanel.svelte';
+	import GrafikControlPanel from '../components/detail-pemantauan/GrafikControlPanel.svelte';
 
 	let dropdownOpen = false;
 	let showChartAndTable = false;
@@ -18,6 +18,21 @@
 		{ name: 'Wind Direction', checked: false }
 	];
 
+	let chartSettings = [
+		{ name: 'Rainfall (mm)', color: '#3b82f6', axis: 'Kiri', tipe: 'Garis' },
+		{ name: 'Wind Direction (°)', color: '#ef4444', axis: 'Kanan', tipe: 'Garis' },
+		{ name: 'Water Level (cm)', color: '#f59e0b', axis: 'Kiri', tipe: 'Garis' }
+	];
+
+	function handleUpdate(event) {
+		const updatedPanels = event.detail.panels;
+		chartSettings = updatedPanels.filter((p) =>
+			selectedSensors.some((s) => p.name.toLowerCase().includes(s.name.toLowerCase()))
+		);
+	}
+
+	$: selectedSensors = sensors.filter((s) => s.checked);
+
 	$: selectAll = sensors.every((s) => s.checked);
 
 	function toggleAll() {
@@ -25,7 +40,11 @@
 		sensors = sensors.map((sensor) => ({ ...sensor, checked: newState }));
 	}
 
-	let selectedSensors = sensors.filter((s) => s.checked);
+	$: chartSettings = chartSettings.filter((p) =>
+		selectedSensors.some((s) => p.name.toLowerCase().includes(s.name.toLowerCase()))
+	);
+
+	// let selectedSensors = sensors.filter((s) => s.checked);
 
 	const sensorColors: Record<string, string> = {
 		'Wind Direction': 'bg-red-500',
@@ -37,7 +56,19 @@
 		sensors = sensors.map((sensor) =>
 			sensor.name === name ? { ...sensor, checked: false } : sensor
 		);
+		updateSelected();
+	}
+
+	function updateSelected() {
 		selectedSensors = sensors.filter((s) => s.checked);
+		chartSettings = [
+			{ name: 'Rainfall (mm)', color: '#3b82f6', axis: 'Kiri', tipe: 'Garis' },
+			{ name: 'Wind Direction (°)', color: '#ef4444', axis: 'Kanan', tipe: 'Garis' },
+			{ name: 'Water Level (cm)', color: '#f59e0b', axis: 'Kiri', tipe: 'Garis' }
+		].filter((p) =>
+			selectedSensors.some((s) => p.name.toLowerCase().includes(s.name.toLowerCase()))
+		);
+		showChartAndTable = selectedSensors.length > 0;
 	}
 
 	function toggleFullscreen() {
@@ -45,8 +76,7 @@
 	}
 
 	function tampilkan() {
-		selectedSensors = sensors.filter((s) => s.checked);
-		showChartAndTable = selectedSensors.length > 0;
+		updateSelected();
 		dropdownOpen = false;
 	}
 </script>
@@ -94,6 +124,7 @@
 									class="sr-only"
 									bind:checked={sensors[i].checked}
 									id={`sensor-${i}`}
+									on:change={updateSelected}
 								/>
 								<span
 									class={`w-5 h-5 flex items-center justify-center rounded ${sensor.checked ? 'bg-orange-400 text-white' : 'bg-gray-200 text-transparent'}`}
@@ -193,7 +224,7 @@
 	<div class="flex flex-col space-y-4">
 		{#if showChartAndTable}
 			<div class="p-4">
-				<MultiAxisChart bind:isFullscreen {selectedSensors} />
+				<MultiAxisChart bind:isFullscreen {selectedSensors} panels={chartSettings} />
 			</div>
 			<div class="p-4">
 				<MonitoringTable {selectedSensors} />
@@ -204,7 +235,7 @@
 	</div>
 
 	{#if showGrafikControl}
-		<GrafikControlPanel on:close={() => (showGrafikControl = false)} />
+		<GrafikControlPanel on:close={() => (showGrafikControl = false)} on:update={handleUpdate} />
 	{/if}
 </div>
 

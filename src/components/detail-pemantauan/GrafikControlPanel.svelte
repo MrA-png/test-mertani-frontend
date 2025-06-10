@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { ChevronDown, ChevronUp, X } from 'lucide-svelte';
-	import { createEventDispatcher } from 'svelte';
+	import { createEventDispatcher, onMount } from 'svelte';
 
 	let tipeOptions = ['Garis', 'Batang', 'Arah Angin'];
 	const dispatch = createEventDispatcher();
 
 	let panels = [
-		{ name: 'Rainfall', color: '#2E93FA', axis: 'Kiri', tipe: 'Garis' },
-		{ name: 'Wind Direction', color: '#00E396', axis: 'Kiri', tipe: 'Garis' },
-		{ name: 'Water Level', color: '#E89623', axis: 'Kiri', tipe: 'Garis' }
+		{ name: 'Rainfall (mm)', color: '#3b82f6', axis: 'Kiri', tipe: 'Garis' },
+		{ name: 'Wind Direction (°)', color: '#ef4444', axis: 'Kiri', tipe: 'Garis' },
+		{ name: 'Water Level (cm)', color: '#f59e0b', axis: 'Kiri', tipe: 'Garis' }
 	];
 
 	let expandedPanels = panels.map(() => true);
@@ -36,7 +36,7 @@
 	}
 
 	function simpanPerubahan() {
-		console.log(panels);
+		dispatch('update', { panels });
 	}
 
 	function handleClose() {
@@ -161,7 +161,7 @@
 								<input
 									type="color"
 									value={panel.color}
-									on:input={(e) => updateColor(index, e.target.value)}
+									on:input={(e) => updateColor(index, (e.target as HTMLInputElement).value)}
 									class="sr-only"
 								/>
 							</label>
