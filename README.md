@@ -9,17 +9,18 @@
 
 ## 📂 Project Structure
 
-src/
-components/ # Reusable UI components
-lib/
-data/ # Static or mock data
-types.ts # TypeScript type definitions
-pages/ # Page-level components or layouts
-routes/ # SvelteKit routing
-type/ # Additional types/interfaces
-app.css # Global styles
-static/ # Static files (images, fonts, etc.)
-
+```plaintext
+├── src/
+│ ├── components/ # Reusable UI components
+│ ├── lib/
+│ │ └── data/ # Static or mock data
+│ │ └── types.ts # TypeScript type definitions
+│ ├── pages/ # Page-level components or layouts
+│ ├── routes/ # SvelteKit routing
+│ ├── type/ # Additional types/interfaces
+│ ├── app.css # Global styles
+├── static/ # Static files (images, fonts, etc.)
+```
 
 ---
 
@@ -33,16 +34,17 @@ static/ # Static files (images, fonts, etc.)
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/your-repo-name.git
+git clone https://github.com/MrA-png/test-mertani-frontend.git
 
 # Navigate into the project directory
-cd your-repo-name
+cd test-mertani-frontend
 
 # Install dependencies
 npm install
 
 # Start the development server
 npm run dev
+```
 
 App will be available at http://localhost:5173
 
