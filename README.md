@@ -8,18 +8,19 @@
 - [Vite](https://vitejs.dev/) for fast development and build
 
 ## 📂 Project Structure
-├── src/
-│ ├── components/ # Reusable UI components
-│ ├── lib/
-│ │ └── data/ # Static or mock data
-│ │ └── types.ts # TypeScript type definitions
-│ ├── pages/ # Page-level components or layouts
-│ ├── routes/ # SvelteKit routing
-│ ├── type/ # Additional types/interfaces
-│ ├── app.css # Global styles
-│ ├── app.d.ts # SvelteKit ambient types
-│ └── app.html # Root HTML template
-├── static/ # Static files (images, fonts, etc.)
+
+src/
+├── components/ # Reusable UI components
+├── lib/
+│ ├── data/ # Static or mock data
+│ └── types.ts # TypeScript type definitions
+├── pages/ # Page-level components or layouts
+├── routes/ # SvelteKit routing
+├── type/ # Additional types/interfaces
+├── app.css # Global styles
+├── app.d.ts # SvelteKit ambient types
+└── app.html # Root HTML template
+static/ # Static files (images, fonts, etc.)
 
 
 ---
