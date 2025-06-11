@@ -1,5 +1,7 @@
 # Svelte + TypeScript + Tailwind CSS Project
 
+**using Random Data Generate**
+
 ## 🚀 Tech Stack
 
 - [Svelte](https://svelte.dev/)
