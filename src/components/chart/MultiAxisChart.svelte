@@ -26,7 +26,10 @@
 			backgroundColor: string;
 			yAxisID: string;
 			tension: number;
-			fill: boolean;
+            fill: boolean;
+            type?: 'line' | 'bar' | 'scatter';
+            pointRadius?: number;
+            borderWidth?: number;
 		}[];
 	};
 
@@ -187,6 +190,7 @@
 			}
 		}
 	};
+	
 	onMount(() => {
 		chart = new Chart(canvas, { type: 'line', data, options });
 		updateChart();
