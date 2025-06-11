@@ -1,6 +1,11 @@
 <script lang="ts">
-	import { labels, datasetMap } from '$lib/data/sensorData';
+	import { labels as defaultLabels, datasetMap as defaultDatasetMap } from '$lib/data/sensorData';
+
 	export let selectedSensors: { name: string; checked: boolean }[] = [];
+	export let chartData: { labels: string[]; datasets: { label: string; data: number[] }[] } = {
+		labels: [],
+		datasets: []
+	};
 
 	const sensorNameMap: Record<string, string> = {
 		'Rainfall': 'Rainfall (mm)',
@@ -18,25 +23,43 @@
 		return `${day}-${month}-${year} ${hours}:${minutes}`;
 	}
 
+	// Sensor yang dicentang dan dipetakan ke label dataset
 	$: selectedSensorNames = selectedSensors
 		.filter((s) => s.checked)
 		.map((s) => sensorNameMap[s.name])
-		.filter(Boolean); 
+		.filter(Boolean);
 
-	$: tableData = labels.map((datetime, index) => {
+	// Gunakan data default jika chartData.datasets kosong
+	let usedLabels: string[] = [];
+	let usedDatasetMap: Record<string, { label: string; data: number[] }> = {};
+
+	$: {
+		if (chartData.datasets && chartData.datasets.length > 0) {
+			usedLabels = chartData.labels;
+			usedDatasetMap = {};
+			for (const dataset of chartData.datasets) {
+				usedDatasetMap[dataset.label] = dataset;
+			}
+		} else {
+			usedLabels = defaultLabels;
+			usedDatasetMap = { ...defaultDatasetMap };
+		}
+	}
+
+	// Buat data tabel
+	$: tableData = usedLabels.map((datetime, index) => {
 		const row: Record<string, string | number> = {
 			datetime: formatDateTime(datetime)
 		};
-		for (const sensorKey of selectedSensorNames as (keyof typeof datasetMap)[]) {
-			row[sensorKey] = datasetMap[sensorKey]?.data[index] ?? '-';
+		for (const sensorKey of selectedSensorNames as (keyof typeof usedDatasetMap)[]) {
+			row[sensorKey] = usedDatasetMap[sensorKey]?.data[index] ?? '-';
 		}
 		return row;
 	});
 
+	// Urutkan dari tanggal terbaru ke terlama
 	$: sortedData = [...tableData].sort(
-		(a, b) =>
-			new Date(labels[tableData.indexOf(b)]).getTime() -
-			new Date(labels[tableData.indexOf(a)]).getTime()
+		(a, b) => new Date(b.datetime as string).getTime() - new Date(a.datetime as string).getTime()
 	);
 </script>
 
@@ -54,7 +77,7 @@
 						<th class="px-4 py-2 text-left font-normal border-b whitespace-nowrap">Tanggal</th>
 						{#each selectedSensorNames as sensorKey}
 							<th class="px-4 py-2 text-left font-normal border-b whitespace-nowrap">
-								{datasetMap[sensorKey as keyof typeof datasetMap]?.label}
+								{usedDatasetMap[sensorKey]?.label}
 							</th>
 						{/each}
 					</tr>

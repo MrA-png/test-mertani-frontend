@@ -8,8 +8,8 @@
 	import flatpickr from 'flatpickr';
 	import 'flatpickr/dist/themes/airbnb.css';
 	import { onMount } from 'svelte';
-	import { format, subMonths } from 'date-fns';
-	import { labels, datasetMap } from '$lib/data/sensorData';
+	import { format, subDays } from 'date-fns';
+	import { labels as predefinedLabels, datasetMap } from '$lib/data/sensorData';
 
 	let dateInput: HTMLInputElement;
 	let selectedDateRange: [Date, Date] | null = null;
@@ -51,22 +51,45 @@
 			timestamps.push(new Date(current));
 			current.setDate(current.getDate() + 1);
 		}
+		
+		type DatasetMapEntry = {
+			label: string;
+			borderColor: string;
+			backgroundColor: string;
+			yAxisID: string;
+			tension: number;
+			pointRadius: number;
+		};
 
 		const datasets = selectedSensors.map((sensor) => {
-			const matchedKey = Object.keys(datasetMap).find((key) =>
+			const setting = chartSettings.find((s) =>
+				s.name.toLowerCase().includes(sensor.name.toLowerCase())
+			);
+
+			const baseFoundKey = Object.keys(datasetMap).find((key) =>
 				key.toLowerCase().includes(sensor.name.toLowerCase())
 			);
 
-			const base = matchedKey ? datasetMap[matchedKey] : null;
+			const baseData: DatasetMapEntry = baseFoundKey
+				? (datasetMap[baseFoundKey] as DatasetMapEntry)
+				: {
+						label: sensor.name,
+						borderColor: '#000',
+						backgroundColor: '#00000033',
+						yAxisID: 'y1', 
+						tension: 0.3, 
+						pointRadius: 0 
+				  };
 
 			return {
-				label: base?.label || sensor.name,
-				borderColor: base?.borderColor || '#000',
-				backgroundColor: base?.backgroundColor || '#00000033',
-				yAxisID: base?.yAxisID || 'y1',
-				tension: base?.tension ?? 0.3,
-				pointRadius: base?.pointRadius ?? 0,
-				data: timestamps.map(() => Math.floor(Math.random() * 100))
+				label: setting?.name || baseData.label || sensor.name,
+				borderColor: setting?.color || baseData.borderColor || '#000',
+				backgroundColor: (setting?.color ? setting.color + '33' : baseData.backgroundColor) || '#00000033', 
+				yAxisID: setting?.axis === 'Kanan' ? 'y2' : 'y1', 
+				tension: setting?.tipe === 'Garis' ? baseData.tension ?? 0.3 : 0, 
+				pointRadius: setting?.tipe === 'Garis' ? baseData.pointRadius ?? 0 : 0,
+				data: timestamps.map(() => Math.floor(Math.random() * 100)),
+				type: setting?.tipe === 'Batang' ? 'bar' : setting?.tipe === 'Arah Angin' ? 'scatter' : 'line', 
 			};
 		});
 
@@ -88,9 +111,9 @@
 
 	onMount(() => {
 		const now = new Date();
-		const oneMonthAgo = subMonths(now, 1);
+		const twoWeeksAgo = subDays(now, 7);
 
-		startDate = oneMonthAgo;
+		startDate = twoWeeksAgo;
 		endDate = now;
 		selectedDateRange = [startDate, endDate];
 
@@ -107,7 +130,7 @@
 				firstDayOfWeek: 1,
 				rangeSeparator: ' → '
 			},
-			defaultDate: [format(oneMonthAgo, 'yyyy-MM-dd HH:mm'), format(now, 'yyyy-MM-dd HH:mm')],
+			defaultDate: [format(twoWeeksAgo, 'yyyy-MM-dd HH:mm'), format(now, 'yyyy-MM-dd HH:mm')],
 			onOpen: () => {
 				originalStartDate = startDate;
 				originalEndDate = endDate;
@@ -153,7 +176,7 @@
 					startDate = now;
 					endDate = now;
 					selectedDateRange = [startDate, endDate];
-					instance.setDate([now, now], true); 
+					instance.setDate([now, now], true);
 				});
 
 				// Buttons Ga Jadi + OK
@@ -219,15 +242,25 @@
 
 	function handleUpdate(event: CustomEvent) {
 		const updatedPanels = event.detail.panels;
-
-		chartSettings = updatedPanels.filter((p: { name: string }) =>
-			selectedSensors.some((s: { name: string }) =>
-				p.name.toLowerCase().includes(s.name.toLowerCase())
-			)
-		);
+		chartSettings = updatedPanels;
+		updateChartByDateRange();
 	}
 
+	// function handleUpdate(event: CustomEvent) {
+	// 	const updatedPanels = event.detail.panels;
+
+	// 	chartSettings = updatedPanels.filter((p: { name: string }) =>
+	// 		selectedSensors.some((s: { name: string }) =>
+	// 			p.name.toLowerCase().includes(s.name.toLowerCase())
+	// 		)
+	// 	);
+	// }
+
 	$: selectedSensors = sensors.filter((s) => s.checked);
+
+	$: if (selectedSensors && startDate && endDate) {
+		updateChartByDateRange();
+	}
 
 	$: selectAll = sensors.every((s) => s.checked);
 
@@ -265,6 +298,7 @@
 			selectedSensors.some((s) => p.name.toLowerCase().includes(s.name.toLowerCase()))
 		);
 		showChartAndTable = selectedSensors.length > 0;
+		updateChartByDateRange();
 	}
 
 	function toggleFullscreen() {
@@ -440,7 +474,7 @@
 				<MultiAxisChart bind:isFullscreen {selectedSensors} panels={chartSettings} {chartData} />
 			</div>
 			<div class="p-4">
-				<MonitoringTable {selectedSensors} {chartData}/>
+				<MonitoringTable {selectedSensors} {chartData} />
 			</div>
 		{:else}
 			<SensorPlaceholder />
@@ -448,7 +482,11 @@
 	</div>
 
 	{#if showGrafikControl}
-		<GrafikControlPanel on:close={() => (showGrafikControl = false)} on:update={handleUpdate} />
+		<GrafikControlPanel
+			on:close={() => (showGrafikControl = false)}
+			on:update={handleUpdate}
+			panels={chartSettings}
+		/>
 	{/if}
 </div>
 

@@ -5,36 +5,43 @@
 	let tipeOptions = ['Garis', 'Batang', 'Arah Angin'];
 	const dispatch = createEventDispatcher();
 
-	let panels = [
-		{ name: 'Rainfall (mm)', color: '#3b82f6', axis: 'Kiri', tipe: 'Garis' },
-		{ name: 'Wind Direction (°)', color: '#ef4444', axis: 'Kiri', tipe: 'Garis' },
-		{ name: 'Water Level (cm)', color: '#f59e0b', axis: 'Kiri', tipe: 'Garis' }
-	];
+	export let panels: Array<{ name: string; color: string; axis: string; tipe: string }> = []; // Now receives panels as a prop
+
+	// let panels = [
+	// 	{ name: 'Rainfall (mm)', color: '#3b82f6', axis: 'Kiri', tipe: 'Garis' },
+	// 	{ name: 'Wind Direction (°)', color: '#ef4444', axis: 'Kiri', tipe: 'Garis' },
+	// 	{ name: 'Water Level (cm)', color: '#f59e0b', axis: 'Kiri', tipe: 'Garis' }
+	// ];
 
 	let expandedPanels = panels.map(() => true);
 	let dropdownOpen = panels.map(() => false);
 
 	function updateColor(index: number, newColor: string) {
 		panels[index].color = newColor;
+		panels = panels;
 	}
 
 	function toggleAxis(panelIndex: number, axis: string) {
 		panels[panelIndex].axis = axis;
+		panels = panels; 
 	}
 
 	function togglePanel(index: number) {
 		expandedPanels[index] = !expandedPanels[index];
+		expandedPanels = expandedPanels;
 	}
 
 	function toggleDropdown(index: number) {
 		dropdownOpen = dropdownOpen.map((_, i) => (i === index ? !dropdownOpen[i] : false));
+		dropdownOpen = dropdownOpen; 
 	}
 
 	function selectTipe(panelIndex: number, option: string) {
 		panels[panelIndex].tipe = option;
 		dropdownOpen[panelIndex] = false;
+		panels = panels;
+		dropdownOpen = dropdownOpen; 
 	}
-
 	function simpanPerubahan() {
 		dispatch('update', { panels });
 	}

@@ -187,6 +187,7 @@
 			}
 		}
 	};
+	
 	onMount(() => {
 		chart = new Chart(canvas, { type: 'line', data, options });
 		updateChart();
