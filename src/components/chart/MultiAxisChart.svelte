@@ -26,7 +26,10 @@
 			backgroundColor: string;
 			yAxisID: string;
 			tension: number;
-			fill: boolean;
+            fill: boolean;
+            type?: 'line' | 'bar' | 'scatter';
+            pointRadius?: number;
+            borderWidth?: number;
 		}[];
 	};
 
