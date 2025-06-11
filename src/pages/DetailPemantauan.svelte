@@ -74,7 +74,7 @@
 				: {
 						label: sensor.name,
 						borderColor: '#000',
-						backgroundColor: '#000000', 
+						backgroundColor: '#000000',
 						yAxisID: 'y1',
 						tension: 0.4,
 						pointRadius: 0
@@ -83,8 +83,8 @@
 			return {
 				label: setting?.name || baseData.label || sensor.name,
 				borderColor: setting?.color || baseData.borderColor || '#000',
-				backgroundColor: setting?.color || baseData.backgroundColor || '#000000', 
-				yAxisID: setting?.axis === 'Kanan' ? 'y2' : 'y1', 
+				backgroundColor: setting?.color || baseData.backgroundColor || '#000000',
+				yAxisID: setting?.axis === 'Kanan' ? 'y2' : 'y1',
 				tension: setting?.tipe === 'Garis' ? (baseData.tension ?? 0.4) : 0,
 				pointRadius: setting?.tipe === 'Garis' ? (baseData.pointRadius ?? 0) : 0,
 				data: timestamps.map(() => Math.floor(Math.random() * 100)),
@@ -94,7 +94,7 @@
 		});
 
 		return {
-			labels: timestamps.map((date) => format(date, 'yyyy-MM-dd HH:mm')), 
+			labels: timestamps.map((date) => format(date, 'yyyy-MM-dd HH:mm')),
 			datasets
 		};
 	}
@@ -275,11 +275,45 @@
 
 	// let selectedSensors = sensors.filter((s) => s.checked);
 
-	const sensorColors: Record<string, string> = {
-		'Wind Direction': 'bg-red-500',
-		'Water Level': 'bg-orange-400',
-		Rainfall: 'bg-blue-400'
-	};
+	// const sensorColors: Record<string, string> = {
+	// 	'Wind Direction': 'bg-red-500',
+	// 	'Water Level': 'bg-orange-400',
+	// 	Rainfall: 'bg-blue-400'
+	// };
+
+	let sensorColors: Record<string, string> = {};
+
+	$: if (chartData && chartData.datasets && selectedSensors?.length) {
+		const updatedColors: Record<string, string> = {};
+
+		selectedSensors.forEach((sensor) => {
+			const sensorLabel = getSensorName(sensor.name);
+
+			const matchedDataset = chartData.datasets.find(
+				(d: { label: string; backgroundColor: string }) => {
+					const datasetLabel = getSensorName(d.label);
+					return datasetLabel.toLowerCase() === sensorLabel.toLowerCase();
+				}
+			);
+
+			const fallbackColor = '#000000';
+			const color = matchedDataset?.backgroundColor || fallbackColor;
+
+			console.log('Sensor:', sensorLabel, 'Color:', color);
+
+			updatedColors[sensorLabel] = color;
+		});
+
+		sensorColors = updatedColors;
+		console.log('sensorColors:', sensorColors);
+	}
+
+	function getSensorName(label: string): string {
+		if (label.toLowerCase().includes('rain')) return 'Rainfall';
+		if (label.toLowerCase().includes('wind')) return 'Wind Direction';
+		if (label.toLowerCase().includes('water')) return 'Water Level';
+		return label;
+	}
 
 	function removeSensor(name: string) {
 		sensors = sensors.map((sensor) =>
@@ -382,7 +416,7 @@
 							on:click={tampilkan}
 							disabled={sensors.every((s) => !s.checked)}
 							class="w-full text-sm font-medium py-2 rounded-lg
-								{sensors.every((s) => !s.checked)
+									{sensors.every((s) => !s.checked)
 								? 'bg-gray-300 text-gray-500 cursor-not-allowed'
 								: 'bg-orange-400 hover:bg-orange-500 text-white'}"
 						>
@@ -456,7 +490,10 @@
 				<div
 					class="flex items-center gap-2 px-3 py-1 text-sm rounded-md border border-gray-300 bg-gray-50"
 				>
-					<div class="{sensorColors[sensor.name] || 'bg-gray-400'} w-3 h-3 rounded-sm"></div>
+					<div
+						style="background-color: {sensorColors[sensor.name]}"
+						class="w-3 h-3 rounded-sm"
+					></div>
 
 					<span class="text-black">{sensor.name}</span>
 
