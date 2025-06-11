@@ -26,10 +26,10 @@
 			backgroundColor: string;
 			yAxisID: string;
 			tension: number;
-            fill: boolean;
-            type?: 'line' | 'bar' | 'scatter';
-            pointRadius?: number;
-            borderWidth?: number;
+			fill: boolean;
+			type?: 'line' | 'bar' | 'scatter';
+			pointRadius?: number;
+			borderWidth?: number;
 		}[];
 	};
 
@@ -190,7 +190,7 @@
 			}
 		}
 	};
-	
+
 	onMount(() => {
 		chart = new Chart(canvas, { type: 'line', data, options });
 		updateChart();
@@ -217,8 +217,20 @@
 		if (isChartDataAvailable) {
 			chart.data.labels = chartData.labels;
 			chart.data.datasets = chartData.datasets;
+
+			panels.forEach((panel, index) => {
+				const axisId = `y${index + 1}`;
+				if (chart.options.scales && chart.options.scales[axisId]) {
+					chart.options.scales[axisId].position = panel.axis === 'Kiri' ? 'left' : 'right';
+					chart.options.scales[axisId].title = {
+						display: true,
+						text: panel.name
+					};
+				}
+			});
+
 			chart.update();
-			return; 
+			return;
 		}
 
 		const xScale = {
@@ -258,19 +270,16 @@
 
 			return {
 				label: panel.name,
-				data: datasetMap[panel.name]?.data ?? [],
+				yAxisID: axisId,
+				data: [],
 				borderColor: panel.color,
 				backgroundColor: panel.color,
-				yAxisID: axisId,
-				type: panel.tipe === 'Batang' ? 'bar' : 'line',
-				fill: false,
-				pointRadius: panel.tipe === 'Batang' ? undefined : 0,
-				tension: panel.tipe === 'Batang' ? undefined : 0.4,
-				borderWidth: 2
+				tension: panel.tipe === 'Garis' ? 0.3 : 0,
+				pointRadius: panel.tipe === 'Garis' ? 0 : 3,
+				type: panel.tipe === 'Batang' ? 'bar' : panel.tipe === 'Arah Angin' ? 'scatter' : 'line'
 			};
 		});
 
-		// Update chart config
 		chart.options.scales = newScales;
 		chart.data.datasets = datasets;
 		chart.update();

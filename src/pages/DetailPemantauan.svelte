@@ -46,7 +46,6 @@
 		const timestamps: Date[] = [];
 		const current = new Date(start);
 
-		// Loop per 1 hari
 		while (current <= end) {
 			timestamps.push(new Date(current));
 			current.setDate(current.getDate() + 1);
@@ -75,18 +74,18 @@
 				: {
 						label: sensor.name,
 						borderColor: '#000',
-						backgroundColor: '#000000', // Default fallback background color (non-transparent)
+						backgroundColor: '#000000', 
 						yAxisID: 'y1',
-						tension: 0.3,
+						tension: 0.4,
 						pointRadius: 0
 					};
 
 			return {
 				label: setting?.name || baseData.label || sensor.name,
 				borderColor: setting?.color || baseData.borderColor || '#000',
-				backgroundColor: setting?.color || baseData.backgroundColor || '#000000', // Gunakan warna solid, tanpa transparansi
-				yAxisID: setting?.axis === 'Kanan' ? 'y2' : 'y1', // Ini sudah benar untuk menunjuk ke 'y1' atau 'y2'
-				tension: setting?.tipe === 'Garis' ? (baseData.tension ?? 0.3) : 0, // Pastikan fallback 0.3
+				backgroundColor: setting?.color || baseData.backgroundColor || '#000000', 
+				yAxisID: setting?.axis === 'Kanan' ? 'y2' : 'y1', 
+				tension: setting?.tipe === 'Garis' ? (baseData.tension ?? 0.4) : 0,
 				pointRadius: setting?.tipe === 'Garis' ? (baseData.pointRadius ?? 0) : 0,
 				data: timestamps.map(() => Math.floor(Math.random() * 100)),
 				type:
@@ -95,8 +94,7 @@
 		});
 
 		return {
-			// Pastikan labels diformat jika timestamps adalah objek Date
-			labels: timestamps.map((date) => format(date, 'yyyy-MM-dd HH:mm')), // Mengasumsikan Anda ingin label tanggal/waktu
+			labels: timestamps.map((date) => format(date, 'yyyy-MM-dd HH:mm')), 
 			datasets
 		};
 	}
